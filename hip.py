@@ -17,6 +17,7 @@ print("%f seconds reading" %(time.time() - t))
 
 num_train = df_train.shape[0]
 
+#edit here
 def str_stemmer(s):
 	return " ".join([stemmer.stem(word) for word in s.lower().split()])
 
@@ -63,7 +64,8 @@ def dtl(train_atts, depth, default):
 	else:
 		best = choose(train_atts) # the name of the best attribute, in string form
 		tree = #decision tree with root test best
-		for val in best:
+		# for val in best:
+	return tree
 
 
 class node:
