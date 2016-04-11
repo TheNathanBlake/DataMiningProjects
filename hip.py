@@ -17,7 +17,6 @@ print("%f seconds reading" %(time.time() - t))
 
 num_train = df_train.shape[0]
 
-#edit here
 def str_stemmer(s):
 	return " ".join([stemmer.stem(word) for word in s.lower().split()])
 
@@ -59,23 +58,46 @@ test_atts = df_test.drop(['id','relevance'],axis=1).values
 def dtl(train_atts, depth, default):
 	if not train_atts:
 		return default
-	elif len(train_atts[0]) == 1:
+	elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
 		return mode(train_atts)
 	else:
-		best = choose(train_atts) # the name of the best attribute, in string form
-		tree = #decision tree with root test best
-		# for val in best:
-	return tree
+		best_att = choose(train_atts) # the name of the best attribute, in string form
+		tree = node(best_att) # make a node with the best attribute
+		best_weight = tree.set_weight(train_atts) # get the best weight for the branch
+		for val in train_atts[best_att]: # probably not my best option
+			best_atts = # probably a threshold, determined by another function for thresholds for best separation (lowest avg. standard deviation)
+		return tree
 
 
+# changing a basic thing
+# node object (used with the decision tree learner)
 class node:
 	def __init__(self, attribute):
 		self.attribute = attribute
 		self.branches = []
-	def give_weight(self, weight):
-		self.weight = weight
 	def connect(self, leaf):
 		self.branches.append(leaf)
+	def set_weight(self, values):
+		best = [False, False] # [threshold, variance] (looking for lowest variance sum, since high variance in a branch means rankings were less separated)
+		low=[]
+		high=[]
+		for weight in range(min(values), max(values)+1):
+			low = [i in values if i < weight]
+			high = [i in values if i >= weight]
+			low_mean = sum([i in low])/len(low)
+			high_mean = sum([i in high])/len(low)
+			low_var = sum([(i-low_mean)**2 for i in low]) / (len(low)-1)
+			high_var = sum([(i-high_mean)**2 for i in high] ) / (len(high)-1)
+
+			var = low_var + high_var
+			if not best[1] or var < best[1]:
+				best[0] = weight
+				best[1] = var
+		self.weight = best[0] #assign the best weight to the node 
+
+
+def choose():
+	return "not implemented"
 
 #rf = RandomForestRegressor(n_estimators=15, max_depth=6, random_state=0)
 #clf = BaggingRegressor(rf, n_estimators=45, max_samples=0.1, random_state=25)
