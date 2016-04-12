@@ -16,10 +16,9 @@ node_count = 0
 #using 0.2 as a stopping variance
 def dtl(train_atts, depth, default):
 	node_count += 1
+	print("node %d, %d deep" %(node_count, depth))
 	if train_atts.values == []:
 		return node(None, default)
-	#elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
-		#return (train_atts.values)
 	elif depth == 0:
 		return node(None, default)
 	elif variance(train_atts) > 0.002: # If the variance gets really small, we do this to keep us sane.
@@ -39,14 +38,28 @@ class node:
 	step = 11
 	branches = []
 	value = None
+	thresh = None
 	def connect(self, leaf1, leaf2 = None):
 		self.branches.append(leaf1)
 		if leaf2 is not None:
 			self.branches.append(leaf2)
-	def traverse(submission, row):
+	def traverse(test, row):
 		if branches == []: # End of the line
-			if value == None:
+			if value is None:
 				print("Warning: Could not classify item (Why are there no parameters?  Hmm...)")
+				return None
+			else:
+				return value
+		else:
+			if thresh is None:
+				print("This should not happen.")
+				return None
+			else:
+				if submission[attributes].values[row] < thresh: # TODO: return here after testing this function when things load
+					return traverse(branches[0])
+				else:
+					return traverse(branches[1])
+
 
 	def __init__(self, train_atts = None, val = None):
 		if train_atts is None: #this indicates there's a value
@@ -128,14 +141,17 @@ df_train = df_all.iloc[:num_train]
 df_test = df_all.iloc[num_train:]
 id_test = df_test['id']
 
-att_names = (df_train.drop(['id', 'product_uid', 'relevance'])).columns.values
+att_names = (df_train.drop(['id', 'product_uid', 'relevance'], axis=1)).columns.values
 print("%f seconds messing with the arrays" %(time.time() - t))
 
 classifications = df_train['relevance'].values
 train_atts = df_train.drop(['id','relevance'],axis=1).values
 test_atts = df_test.drop(['id','relevance'],axis=1).values
 
-beep.drake()
+beep.drake() #lets me know when the provided stuff is done
+
+
+
 #pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)
 
 # to convert a number to a name: train_atts.columns.values.tolist()[x] -> name of column x
