@@ -8,6 +8,54 @@ from nltk.stem.snowball import SnowballStemmer
 
 t = time.time()
 
+def dtl(train_atts, depth, default):
+	if not train_atts:
+		return default
+	elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
+		return (train_atts.values)
+	elif depth == 0:
+		return train_atts
+	else: # the condition that does not make a leaf
+		tree = node(train_atts) # make a node with the best attribute
+		#train_left = train_atts[train_atts[]]
+		#train_right =train_atts[train_atts.columns.values[]]
+		tree.connect(\
+			dtl(train_left, depth-1, sum(train_left.values[2])/len(train_left.values)), \
+			dtl(train_right, depth-1, sum(train_right.values[2]/len(train_right.values))))
+		return tree
+ 
+# changing a basic thing
+# node object (used with the decision tree learner)
+class node:
+	step = 11
+	def connect(self, leaf1, leaf2 = null):
+		self.branches.append(leaf1)
+		if leaf2:
+			self.branches.append(leaf2)
+	def __init__(self, train_atts):
+		max_gain = self.attribute = self.thresh = -1
+		for A in range(2,len(train_atts)):
+			att_values = train_atts.values[A]
+			low = min(att_values)
+			high = max(att_values)
+			for weight in range(1,self.step):
+				curr_thresh = low + int(weight * (high-low)/(self.step))
+				gain = infogain(train_atts, A, thresh) # i = attribute number
+				if gain > max_gain:
+					max_gain = gain
+					self.attribute = A
+					self.thresh = curr_thresh
+
+def variance(train_atts):
+	total = 0
+
+#pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)\
+
+# returns the information gain of an attribute split based on provided threshold
+def infogain(train_atts, A, thresh):
+	entropy = 0
+
+# ====================BEGIN=================== #
 stemmer = SnowballStemmer('english')
 
 df_train = pd.read_csv('../data/train.csv', encoding="ISO-8859-1")
@@ -58,63 +106,3 @@ train_atts = df_train.drop(['id','relevance'],axis=1).values
 test_atts = df_test.drop(['id','relevance'],axis=1).values
 
 # to convert a number to a name: train_atts.columns.values.tolist()[x] -> name of column x
-
-def dtl(train_atts, depth, default):
-	if not train_atts:
-		return default
-	elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
-		return (train_atts.values)
-	elif depth == 0:
-		return train_atts
-	else: # the condition that does not make a leaf
-		best_att = choose(train_atts) # the name of the best attribute, in string form
-		tree = node(best_att) # make a node with the best attribute
-		best_weight = tree.set_weight(train_atts) # get the best weight for the branch
-		train_left =  #fix soon
-		train_right = 0 #this too
-		tree.connect(\
-			dtl(train_left, depth-1, sum(train_left.values[2])/len(train_left.values)), \
-			dtl(train_right, depth-1, sum(train_right.values[2]/len(train_right.values))))
-		#for val in train_atts[best_att]: # probably not my best option
-			#best_atts = # probably a threshold, determined by another function for thresholds for best separation (lowest avg. standard deviation)
-		return tree
- 
-# changing a basic thing
-# node object (used with the decision tree learner)
-class node:
-	step = 10
-	#define the threshold percentile step.
-	def __init__(self, attribute, thresh):
-		self.attribute = attribute
-		self.thresh = thresh
-		self.branches = []
-	def connect(self, leaf1, leaf2 = null):
-		self.branches.append(leaf1)
-		if leaf2:
-			self.branches.append(leaf2)
-
-# chooses the best attribute for a particular branch
-def choose_att(train_atts, step):
-	max_gain = best_att = best_thresh = -1
-	for A in range(2,len(train_atts)):
-		att_values = train_atts.values[A]
-		low = min(att_values)
-		high = max(att_values)
-		for weight in range(1,step+1):
-			thresh = low + int(weight * (high-low)/(step+1))
-			gain = infogain(train_atts, A, thresh) # i = attribute number
-			if gain > max_gain:
-				max_gain = gain
-				best_att = A
-				best_thresh = thresh
-	return [best_att, best_thresh]
-
-def variance(train_atts):
-	total = 0
-
-#pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)\
-
-# returns the information gain of an attribute split based on provided threshold
-def infogain(train_atts, A, thresh):
-	entropy = 0
-	
