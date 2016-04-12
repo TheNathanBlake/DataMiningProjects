@@ -8,17 +8,18 @@ from nltk.stem.snowball import SnowballStemmer
 
 t = time.time()
 
+#using 0.2 as a stopping variance
 def dtl(train_atts, depth, default):
-	if not train_atts:
+	if train_atts.values == []:
 		return default
-	elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
-		return (train_atts.values)
+	#elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
+		#return (train_atts.values)
 	elif depth == 0:
 		return train_atts
 	else: # the condition that does not make a leaf
 		tree = node(train_atts) # make a node with the best attribute
-		#train_left = train_atts[train_atts[]]
-		#train_right =train_atts[train_atts.columns.values[]]
+		train_left  = train_atts[train_atts.columns.values[node.attribute]]
+		train_right = train_atts[train_atts.columns.values[node.attribute]]
 		tree.connect(\
 			dtl(train_left, depth-1, sum(train_left.values[2])/len(train_left.values)), \
 			dtl(train_right, depth-1, sum(train_right.values[2]/len(train_right.values))))
@@ -28,11 +29,11 @@ def dtl(train_atts, depth, default):
 # node object (used with the decision tree learner)
 class node:
 	step = 11
-	def connect(self, leaf1, leaf2 = null):
+	def connect(self, leaf1, leaf2 = None):
 		self.branches.append(leaf1)
-		if leaf2:
+		if leaf2 is not None:
 			self.branches.append(leaf2)
-	def __init__(self, train_atts):
+	def __init__(self, train_atts, ):
 		max_gain = self.attribute = self.thresh = -1
 		for A in range(2,len(train_atts)):
 			att_values = train_atts.values[A]
@@ -46,10 +47,13 @@ class node:
 					self.attribute = A
 					self.thresh = curr_thresh
 
+# returns the variance of rankings provided by the system
 def variance(train_atts):
 	total = 0
+	mean = sum(train_atts.values[2])/len(train_atts.values[2])
+	var = [(val+mean)**2 for val in train_atts.values[2]]
+	return 1/(len(train_atts.values[2])-1)
 
-#pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)\
 
 # returns the information gain of an attribute split based on provided threshold
 def infogain(train_atts, A, thresh):
@@ -104,5 +108,7 @@ print("%f seconds doing weird things" %(time.time() - t))
 classifications = df_train['relevance'].values
 train_atts = df_train.drop(['id','relevance'],axis=1).values
 test_atts = df_test.drop(['id','relevance'],axis=1).values
+
+#pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)
 
 # to convert a number to a name: train_atts.columns.values.tolist()[x] -> name of column x
