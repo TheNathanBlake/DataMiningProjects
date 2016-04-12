@@ -48,3 +48,6 @@ Temporary Items
 
 # Huge files that destroy shit on upload
 .csv
+
+# the pycache
+__pycache__
