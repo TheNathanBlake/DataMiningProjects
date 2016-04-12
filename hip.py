@@ -1,4 +1,7 @@
+import winsound #I want to know when it's done!
 import time
+from math import log2
+from math import log10
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
@@ -67,41 +70,51 @@ def dtl(train_atts, depth, default):
 		for val in train_atts[best_att]: # probably not my best option
 			best_atts = # probably a threshold, determined by another function for thresholds for best separation (lowest avg. standard deviation)
 		return tree
-
-
+		
 # changing a basic thing
 # node object (used with the decision tree learner)
 class node:
+	#define the threshold percentile step.
+	step = 10
 	def __init__(self, attribute):
 		self.attribute = attribute
 		self.branches = []
 	def connect(self, leaf):
 		self.branches.append(leaf)
-	def set_weight(self, values):
-		best = [False, False] # [threshold, variance] (looking for lowest variance sum, since high variance in a branch means rankings were less separated)
-		low=[]
-		high=[]
-		for weight in range(min(values), max(values)+1):
-			low = [i in values if i < weight]
-			high = [i in values if i >= weight]
-			low_mean = sum([i in low])/len(low)
-			high_mean = sum([i in high])/len(low)
-			low_var = sum([(i-low_mean)**2 for i in low]) / (len(low)-1)
-			high_var = sum([(i-high_mean)**2 for i in high] ) / (len(high)-1)
 
-			var = low_var + high_var
-			if not best[1] or var < best[1]:
-				best[0] = weight
-				best[1] = var
-		self.weight = best[0] #assign the best weight to the node 
+def set_weight(values):
+	best = [False, False] # [threshold, variance] (looking for lowest variance sum, since high variance in a branch means rankings were less separated)
+	low=[]
+	high=[]
+	for weight in range(1,step+1):
+		L = min(values)
+		H = max(malues)
+		thresh = L + int(weight * (M-L)/(step+1)) # courtesy of the teachings from a particular AI book in the works cited folder
+		low = [i in values if i < thresh]
+		high = [i in values if i >= thresh]
+		low_mean = sum([i in low])/len(low)
+		high_mean = sum([i in high])/len(low)
+		low_var = sum([(i-low_mean)**2 for i in low]) / (len(low)-1)
+		high_var = sum([(i-high_mean)**2 for i in high] ) / (len(high)-1)
 
+		var = low_var + high_var
+		if not best[1] or var < best[1]:
+			best[0] = weight
+			best[1] = var
+	self.weight = best[0] #assign the best weight to the node
 
-def choose():
-	return "not implemented"
-
+def choose(train_atts):
+	max_gain = best_att = best_thresh = -1
+	for i in range(1,len(train_atts)):
+	
 #rf = RandomForestRegressor(n_estimators=15, max_depth=6, random_state=0)
 #clf = BaggingRegressor(rf, n_estimators=45, max_samples=0.1, random_state=25)
 #clf.fit(X_train, y_train)
 #y_pred = clf.predict(X_test)
 
-#pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)
+#pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)\
+
+# returns the information gain of an attribute split based on provided threshold
+def infogain(entities):
+	entropy = 0
+	
