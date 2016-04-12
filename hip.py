@@ -1,24 +1,32 @@
-import winsound #I want to know when it's done!
+import beep #I want to know when it's done!
 import time
+from datetime import datetime
 from math import log2
 from math import log10
 import numpy as np
 import pandas as pd
 from nltk.stem.snowball import SnowballStemmer
 
+print(datetime.now())
+
 t = time.time()
+
+node_count = 0
 
 #using 0.2 as a stopping variance
 def dtl(train_atts, depth, default):
+	node_count += 1
 	if train_atts.values == []:
-		return default
+		return node(None, default)
 	#elif len(train_atts[0]) == 3: # id, product uid, relevance (with relevance as the class.  We also don't use uid as an att because it can cause overfitting)
 		#return (train_atts.values)
 	elif depth == 0:
-		return train_atts
+		return node(None, default)
+	elif variance(train_atts) > 0.002: # If the variance gets really small, we do this to keep us sane.
+		return node(None, default)
 	else: # the condition that does not make a leaf
 		tree = node(train_atts) # make a node with the best attribute
-		train_left  = train_atts[train_atts.columns.values[node.attribute]]
+		train_left  = train_atts[att_names[node.attribute].values]
 		train_right = train_atts[train_atts.columns.values[node.attribute]]
 		tree.connect(\
 			dtl(train_left, depth-1, sum(train_left.values[2])/len(train_left.values)), \
@@ -29,35 +37,52 @@ def dtl(train_atts, depth, default):
 # node object (used with the decision tree learner)
 class node:
 	step = 11
+	branches = []
+	value = None
 	def connect(self, leaf1, leaf2 = None):
 		self.branches.append(leaf1)
 		if leaf2 is not None:
 			self.branches.append(leaf2)
-	def __init__(self, train_atts, ):
-		max_gain = self.attribute = self.thresh = -1
-		for A in range(2,len(train_atts)):
-			att_values = train_atts.values[A]
-			low = min(att_values)
-			high = max(att_values)
-			for weight in range(1,self.step):
-				curr_thresh = low + int(weight * (high-low)/(self.step))
-				gain = infogain(train_atts, A, thresh) # i = attribute number
-				if gain > max_gain:
-					max_gain = gain
-					self.attribute = A
-					self.thresh = curr_thresh
+	def traverse(submission, row):
+		if branches == []: # End of the line
+			if value == None:
+				print("Warning: Could not classify item (Why are there no parameters?  Hmm...)")
+
+	def __init__(self, train_atts = None, val = None):
+		if train_atts is None: #this indicates there's a value
+			if val is None:
+				print("Warning: Node object created without parameters.")
+			else:
+				self.value = val
+		else:
+			max_gain = self.attribute = self.thresh = -1
+			for A in att_names:
+				att_values = train_atts[A].values
+				low = min(att_values)
+				high = max(att_values)
+				for weight in range(1,self.step):
+					curr_thresh = low + int(weight * (high-low)/(self.step))
+					gain = infogain(train_atts, A, thresh) # i = attribute number
+					if gain > max_gain:
+						max_gain = gain
+						self.attribute = A
+						self.thresh = curr_thresh
 
 # returns the variance of rankings provided by the system
 def variance(train_atts):
 	total = 0
 	mean = sum(train_atts.values[2])/len(train_atts.values[2])
 	var = [(val+mean)**2 for val in train_atts.values[2]]
-	return 1/(len(train_atts.values[2])-1)
+	return (1/(len(train_atts.values[2])-1)) * var
 
-
-# returns the information gain of an attribute split based on provided threshold
+# returns the 'information gain' of an attribute split based on provided threshold
+# (basically just the added variance, not an actual info gain formula)
 def infogain(train_atts, A, thresh):
-	entropy = 0
+	low = train_atts[train_atts[A] < thresh]
+	high = train_atts[train_atts[A] >= thresh]
+	return 1 - (variance(low) + variance(high))
+
+
 
 # ====================BEGIN=================== #
 stemmer = SnowballStemmer('english')
@@ -103,12 +128,14 @@ df_train = df_all.iloc[:num_train]
 df_test = df_all.iloc[num_train:]
 id_test = df_test['id']
 
-print("%f seconds doing weird things" %(time.time() - t))
+att_names = (df_train.drop(['id', 'product_uid', 'relevance'])).columns.values
+print("%f seconds messing with the arrays" %(time.time() - t))
 
 classifications = df_train['relevance'].values
 train_atts = df_train.drop(['id','relevance'],axis=1).values
 test_atts = df_test.drop(['id','relevance'],axis=1).values
 
+beep.drake()
 #pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('submission.csv',index=False)
 
 # to convert a number to a name: train_atts.columns.values.tolist()[x] -> name of column x
