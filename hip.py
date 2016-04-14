@@ -20,7 +20,7 @@ def dtl(train_atts, depth, default):
 	global att_names
 
 	node_count += 1
-	print("node %d, %d deep" %(node_count, depth))
+	# print("node %d, %d deep" %(node_count, depth))
 	if train_atts.values == []:
 		return node(None, default)
 	elif depth == 0:
@@ -29,42 +29,43 @@ def dtl(train_atts, depth, default):
 		return node(None, default)
 	else: # the condition that does not make a leaf
 		tree = node(train_atts) # make a node with the best attribute
-		print(tree.attribute)
+		# print(tree.attribute)
 		train_left  = train_atts[train_atts[tree.attribute] < tree.thresh]
 		train_right = train_atts[train_atts[tree.attribute] >= tree.thresh]#train_atts.columns.values[node.attribute]]
-		tree.connect(\
-			dtl(train_left, depth-1, sum(train_left['relevance'])/len(train_left.values)), \
-			dtl(train_right, depth-1, sum(train_right['relevance']/len(train_right.values))))
+		tree.connect(dtl(train_left, depth-1, sum(train_atts['relevance'])/len(train_atts.values)), dtl(train_right, depth-1, sum(train_atts['relevance'])/len(train_atts.values)))
 		return tree
  
 # changing a basic thing
 # node object (used with the decision tree learner)
 class node:
 	step = 11
-	branches = []
+	# branches = []
 	value = None
 	thresh = None
 	attribute = None
 	def connect(self, leaf1, leaf2 = None):
-		self.branches.append(leaf1)
-		if leaf2 is not None:
-			self.branches.append(leaf2)
-	def traverse(test, row):
-		if branches == []: # End of the line
-			if value is None:
+		self.branches = [leaf1, leaf2]
+		# self.branches.append(leaf1)
+		# if leaf2 is not None:
+		# 	self.branches.append(leaf2)
+	def traverse(self, test, row):
+		try:
+			self.branches
+		except AttributeError:
+			if self.value is None:
 				print("Warning: Could not classify item (Why are there no parameters?  Hmm...)")
 				return None
 			else:
-				return value
+				return self.value
 		else:
-			if thresh is None:
+			if self.thresh is None:
 				print("This should not happen.")
 				return None
 			else:
-				if submission[attributes].values[row] < thresh: # TODO: return here after testing this function when things load
-					return traverse(branches[0])
+				if test[self.attribute].values[row] < self.thresh: # TODO: return here after testing this function when things load
+					return self.branches[0].traverse(test, row)
 				else:
-					return traverse(branches[1])
+					return self.branches[1].traverse(test, row)
 	def __init__(self, train_atts = None, val = None):
 		# print(self.step)
 		if train_atts is None or len(train_atts.values) == 0: #this indicates there's a value
@@ -82,8 +83,8 @@ class node:
 				for weight in range(1,self.step):
 					curr_thresh = low + int(weight * (high-low)/(self.step))
 					gain = infogain(train_atts, A, curr_thresh) # i = attribute number
-					print(max_gain)
-					print(gain)
+					# print(max_gain)
+					# print(gain)
 					if gain > max_gain:
 						max_gain = gain
 						self.attribute = A
@@ -100,7 +101,10 @@ def variance(train_atts):
 	relevance = train_atts.relevance.values
 	mean = sum(relevance)/len(relevance)
 	var = sum([(val-mean)**2 for val in relevance]) # sample, not population
-	return (1/(len(relevance)-1)) * var
+	try:
+		return var/(len(relevance)-1)
+	except ZeroDivisionError:
+		return var/len(relevance)
 
 # returns the 'information gain' of an attribute split based on provided threshold
 # (basically just the averages, not an actual info gain formula)
@@ -159,12 +163,12 @@ print("%f seconds messing with the arrays" %(time.time() - t))
 
 test_atts = df_test.drop(['id','relevance'],axis=1).values
 
-tree = dtl(df_train, 6, 1)
+tree = dtl(df_train, 10, 1)
 
 # classifications = df_train['relevance'].values
 # train_atts = df_train.drop(['id','relevance'],axis=1).values
 
-# beep.drake() #lets me know when the provided stuff is done
+#beep.drake() #lets me know when the provided stuff is done
 
 
 
