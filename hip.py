@@ -129,7 +129,7 @@ df_test = pd.read_csv('data/test.csv', encoding="ISO-8859-1")
 df_pro_desc = pd.read_csv('data/product_descriptions.csv')
 
 print("%f seconds reading" %(time.time() - t))
-#print("This next step will take a while, but it will notify you by audio when it's finished.")
+print("This next step will take a while (~15 minutes on a high-end i5 processor).")
 num_train = df_train.shape[0]
 
 def str_stemmer(s):
