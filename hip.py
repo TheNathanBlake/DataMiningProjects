@@ -1,4 +1,12 @@
-import beep #I want to know when it's done!
+# Nathan Smith
+# UT ID 1000689732
+# Programming Lab 2
+# 14 April 2016
+#
+# CSV file parsing adapted from code provided by Kaggle user Kushal Agrawal (decision tree functions not used)
+# https://www.kaggle.com/kushal1412/home-depot-product-search-relevance/decision-tree-relevance/code
+#
+#import beep # The person running this could be using Linux!
 import time
 from datetime import datetime
 
@@ -113,16 +121,15 @@ def infogain(train_atts, A, thresh):
 	high = train_atts[train_atts[A] >= thresh][A]
 	return sum(low)/(len(low)+1) + sum(high)/(len(high)+1)
 
-# ====================BEGIN=================== #
+# ====================PARSING==================== #
 stemmer = SnowballStemmer('english')
 
-df_train = pd.read_csv('../data/train.csv', encoding="ISO-8859-1")
-df_test = pd.read_csv('../data/test.csv', encoding="ISO-8859-1")
-# df_attr = pd.read_csv('../data/attributes.csv')
-df_pro_desc = pd.read_csv('../data/product_descriptions.csv')
+df_train = pd.read_csv('data/train.csv', encoding="ISO-8859-1")
+df_test = pd.read_csv('data/test.csv', encoding="ISO-8859-1")
+df_pro_desc = pd.read_csv('data/product_descriptions.csv')
 
 print("%f seconds reading" %(time.time() - t))
-
+#print("This next step will take a while, but it will notify you by audio when it's finished.")
 num_train = df_train.shape[0]
 
 def str_stemmer(s):
@@ -134,6 +141,7 @@ def str_common_word(str1, str2):
 t = time.time()
 df_all = pd.concat((df_train, df_test), axis=0, ignore_index=True)
 
+# will perform further operations on single file to save time
 df_all = pd.merge(df_all, df_pro_desc, how='left', on='product_uid')
 
 df_all['search_term'] = df_all['search_term'].map(lambda x:str_stemmer(x))
@@ -178,6 +186,6 @@ results = [tree.traverse(df_test, i) for i in range(len(df_test))]
 sub = pd.Series(results_norm, index=id_test, name='relevance').to_frame().reset_index()
 sub.to_csv('submission.csv', index_label=True, index=False)
 
-beep.sail() #lets me know when the provided stuff is done
+#beep.sail() #lets me know when the provided stuff is done
 
 # to convert a number to a name: train_atts.columns.values.tolist()[x] -> name of column x
