@@ -175,14 +175,6 @@ tree = dtl(df_train, 10, 1)
 
 results = [tree.traverse(df_test, i) for i in range(len(df_test))]
 
-#low = min(results)
-#results_norm = [(r-low) for r in results]
-#high = max(results_norm)
-#results_norm = [2*(r/high) + 1 for r in results_norm]
-
-# classifications = df_train['relevance'].values
-# train_atts = df_train.drop(['id','relevance'],axis=1).values
-
 sub = pd.Series(results, index=id_test, name='relevance').to_frame().reset_index()
 sub.to_csv('submission.csv', index_label=True, index=False)
 

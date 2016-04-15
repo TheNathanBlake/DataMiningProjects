@@ -49,7 +49,9 @@ Temporary Items
 # Huge files that destroy shit on upload
 *.csv
 
-# TheNathanBlake's testing files and pycache
+# TheNathanBlake's testing files and pycache and class-related stuff
 __pycache__
 test
 data
+P2
+writeup.txt
